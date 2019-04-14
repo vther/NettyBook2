@@ -20,6 +20,8 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * @author lilinfeng
  * @version 1.0
@@ -31,6 +33,7 @@ public class TimeServerHandler extends ChannelHandlerAdapter {
 
     /**
      * 服务端收到请求后就计数,并发回给客户端
+     *
      * @param ctx
      * @param msg
      * @throws Exception
@@ -41,7 +44,7 @@ public class TimeServerHandler extends ChannelHandlerAdapter {
         ByteBuf buf = (ByteBuf) msg;
         byte[] req = new byte[buf.readableBytes()];
         buf.readBytes(req);
-        String body = new String(req, "UTF-8").substring(0, req.length
+        String body = new String(req, StandardCharsets.UTF_8).substring(0, req.length
                 - System.getProperty("line.separator").length());
 
         System.out.println("The time server receive order : " + body

@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2018 Lilinfeng.
- *  
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *  
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,17 +15,16 @@
  */
 package com.phei.netty.protocol.netty.client;
 
-import io.netty.channel.ChannelHandlerAdapter;
-import io.netty.channel.ChannelHandlerContext;
-
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-
 import com.phei.netty.protocol.netty.MessageType;
 import com.phei.netty.protocol.netty.struct.Header;
 import com.phei.netty.protocol.netty.struct.NettyMessage;
+import io.netty.channel.ChannelHandlerAdapter;
+import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Lilinfeng
@@ -53,9 +52,20 @@ public class HeartBeatReqHandler extends ChannelHandlerAdapter {
                 && message.getHeader().getType() == MessageType.HEARTBEAT_RESP
                 .value()) {
             LOG.info("Client receive server heart beat message : ---> "
-                            + message);
+                    + message);
         } else
             ctx.fireChannelRead(msg);
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
+            throws Exception {
+        cause.printStackTrace();
+        if (heartBeat != null) {
+            heartBeat.cancel(true);
+            heartBeat = null;
+        }
+        ctx.fireExceptionCaught(cause);
     }
 
     private class HeartBeatTask implements Runnable {
@@ -69,7 +79,7 @@ public class HeartBeatReqHandler extends ChannelHandlerAdapter {
         public void run() {
             NettyMessage heatBeat = buildHeatBeat();
             LOG.info("Client send heart beat messsage to server : ---> "
-                            + heatBeat);
+                    + heatBeat);
             ctx.writeAndFlush(heatBeat);
         }
 
@@ -80,16 +90,5 @@ public class HeartBeatReqHandler extends ChannelHandlerAdapter {
             message.setHeader(header);
             return message;
         }
-    }
-
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-            throws Exception {
-        cause.printStackTrace();
-        if (heartBeat != null) {
-            heartBeat.cancel(true);
-            heartBeat = null;
-        }
-        ctx.fireExceptionCaught(cause);
     }
 }

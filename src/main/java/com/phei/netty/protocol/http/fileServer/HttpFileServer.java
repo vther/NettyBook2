@@ -36,6 +36,21 @@ public class HttpFileServer {
 
     private static final String DEFAULT_URL = "/nettybook2/src/main/java/com/phei/netty/";
 
+    public static void main(String[] args) throws Exception {
+        int port = 8090;
+        if (args.length > 0) {
+            try {
+                port = Integer.parseInt(args[0]);
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+        }
+        String url = DEFAULT_URL;
+        if (args.length > 1)
+            url = args[1];
+        new HttpFileServer().run(port, url);
+    }
+
     public void run(final int port, final String url) throws Exception {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -69,20 +84,5 @@ public class HttpFileServer {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
-    }
-
-    public static void main(String[] args) throws Exception {
-        int port = 8090;
-        if (args.length > 0) {
-            try {
-                port = Integer.parseInt(args[0]);
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
-            }
-        }
-        String url = DEFAULT_URL;
-        if (args.length > 1)
-            url = args[1];
-        new HttpFileServer().run(port, url);
     }
 }

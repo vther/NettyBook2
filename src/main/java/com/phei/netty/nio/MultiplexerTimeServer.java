@@ -22,6 +22,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -44,10 +45,10 @@ public class MultiplexerTimeServer implements Runnable {
     public MultiplexerTimeServer(int port) {
         try {
             selector = Selector.open();
-            ServerSocketChannel servChannel = ServerSocketChannel.open();
-            servChannel.configureBlocking(false);
-            servChannel.socket().bind(new InetSocketAddress(port), 1024);
-            servChannel.register(selector, SelectionKey.OP_ACCEPT);
+            ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
+            serverSocketChannel.configureBlocking(false);
+            serverSocketChannel.socket().bind(new InetSocketAddress(port), 1024);
+            serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
             System.out.println("The time server is start in port : " + port);
         } catch (IOException e) {
             e.printStackTrace();
@@ -115,14 +116,12 @@ public class MultiplexerTimeServer implements Runnable {
                     readBuffer.flip();
                     byte[] bytes = new byte[readBuffer.remaining()];
                     readBuffer.get(bytes);
-                    String body = new String(bytes, "UTF-8");
-                    System.out.println("The time server receive order : "
-                            + body);
-                    String currentTime = "QUERY TIME ORDER"
-                            .equalsIgnoreCase(body) ? new java.util.Date(
-                            System.currentTimeMillis()).toString()
+                    String body = new String(bytes, StandardCharsets.UTF_8);
+                    System.out.println("The time server receive order : " + body);
+                    String currentTime = "QUERY TIME ORDER".equalsIgnoreCase(body)
+                            ? new java.util.Date(System.currentTimeMillis()).toString()
                             : "BAD ORDER";
-                    if("STOP".equalsIgnoreCase(body)){
+                    if ("STOP".equalsIgnoreCase(body)) {
                         stop();
                     }
                     doWrite(sc, currentTime);
@@ -136,8 +135,7 @@ public class MultiplexerTimeServer implements Runnable {
         }
     }
 
-    private void doWrite(SocketChannel channel, String response)
-            throws IOException {
+    private void doWrite(SocketChannel channel, String response) throws IOException {
         if (response != null && response.trim().length() > 0) {
             byte[] bytes = response.getBytes();
             ByteBuffer writeBuffer = ByteBuffer.allocate(bytes.length);

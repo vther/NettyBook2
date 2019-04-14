@@ -26,9 +26,8 @@ import io.netty.channel.ChannelHandlerContext;
  */
 public class EchoClientHandler extends ChannelHandlerAdapter {
 
-    private int counter;
-
     private static final String ECHO_REQ = "Hi, Lilinfeng. Welcome to Netty.$_";
+    private int counter;
 
     /**
      * Creates a client-side handler.
@@ -49,8 +48,6 @@ public class EchoClientHandler extends ChannelHandlerAdapter {
 
     /**
      * 当服务端回应消息时,该方法被调用, 因为所有过往的消息都会被解码, 所以服务端发回来客户端发送的消息就需要 重新添加分隔符
-     * @param ctx
-     * @param msg
      */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {

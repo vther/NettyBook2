@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2018 Lilinfeng.
- *  
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *  
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,14 +15,13 @@
  */
 package com.phei.netty.protocol.netty.client;
 
+import com.phei.netty.protocol.netty.MessageType;
+import com.phei.netty.protocol.netty.struct.Header;
+import com.phei.netty.protocol.netty.struct.NettyMessage;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
-
-import com.phei.netty.protocol.netty.MessageType;
-import com.phei.netty.protocol.netty.struct.Header;
-import com.phei.netty.protocol.netty.struct.NettyMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

@@ -35,6 +35,11 @@ import io.netty.handler.codec.string.StringDecoder;
  */
 public class EchoClient {
 
+
+    public static void main(String[] args) throws Exception {
+        new EchoClient().connect(8081, "127.0.0.1");
+    }
+
     public void connect(int port, String host) throws Exception {
         // 配置客户端NIO线程组
         EventLoopGroup group = new NioEventLoopGroup();
@@ -47,28 +52,18 @@ public class EchoClient {
                         public void initChannel(SocketChannel ch) {
                             // 与服务器端一样, 添加两个解码器
                             ByteBuf delimiter = Unpooled.copiedBuffer("$_".getBytes());
-                            ch.pipeline().addLast(new DelimiterBasedFrameDecoder(1024,delimiter));
+                            ch.pipeline().addLast(new DelimiterBasedFrameDecoder(1024, delimiter));
                             ch.pipeline().addLast(new StringDecoder());
                             ch.pipeline().addLast(new EchoClientHandler());
                         }
                     });
-
             // 发起异步连接操作
             ChannelFuture f = b.connect(host, port).sync();
-
             // 当代客户端链路关闭
             f.channel().closeFuture().sync();
         } finally {
             // 优雅退出，释放NIO线程组
             group.shutdownGracefully();
         }
-    }
-
-    /**
-     * @param args
-     * @throws Exception
-     */
-    public static void main(String[] args) throws Exception {
-        new EchoClient().connect(8081, "127.0.0.1");
     }
 }

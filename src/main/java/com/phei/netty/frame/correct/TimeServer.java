@@ -33,6 +33,18 @@ import io.netty.handler.codec.string.StringDecoder;
  */
 public class TimeServer {
 
+    public static void main(String[] args) throws Exception {
+        int port = 8080;
+        if (args != null && args.length > 0) {
+            try {
+                port = Integer.valueOf(args[0]);
+            } catch (NumberFormatException e) {
+                // 采用默认值
+            }
+        }
+        new TimeServer().bind(port);
+    }
+
     public void bind(int port) throws Exception {
         // 配置服务端的NIO线程组
         EventLoopGroup bossGroup = new NioEventLoopGroup();
@@ -57,28 +69,12 @@ public class TimeServer {
 
     private class ChildChannelHandler extends ChannelInitializer<SocketChannel> {
         @Override
-        protected void initChannel(SocketChannel arg0) {
+        protected void initChannel(SocketChannel socketChannel) {
             // 在此管道的最后位置插入通道处理程序。
             // 在原来的客户端的处理类 前加上了两个解码器 一个处理粘包, 一个处理String的解码
-            arg0.pipeline().addLast(new LineBasedFrameDecoder(1024)); // 并且设置单行最大长度
-            arg0.pipeline().addLast(new StringDecoder());
-            arg0.pipeline().addLast(new TimeServerHandler());
+            socketChannel.pipeline().addLast(new LineBasedFrameDecoder(1024)); // 并且设置单行最大长度
+            socketChannel.pipeline().addLast(new StringDecoder());
+            socketChannel.pipeline().addLast(new TimeServerHandler());
         }
-    }
-
-    /**
-     * @param args
-     * @throws Exception
-     */
-    public static void main(String[] args) throws Exception {
-        int port = 8080;
-        if (args != null && args.length > 0) {
-            try {
-                port = Integer.valueOf(args[0]);
-            } catch (NumberFormatException e) {
-                // 采用默认值
-            }
-        }
-        new TimeServer().bind(port);
     }
 }

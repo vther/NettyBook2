@@ -15,10 +15,10 @@
  */
 package com.phei.netty.codec.protobuf;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
  * @author Administrator
@@ -40,6 +40,7 @@ public class TestSubscribeReqProto {
     private static SubscribeReqProto.SubscribeReq decode(byte[] body) throws InvalidProtocolBufferException {
         return SubscribeReqProto.SubscribeReq.parseFrom(body);
     }
+
     // 创建一个构建器, 构建好对象
     private static SubscribeReqProto.SubscribeReq createSubscribeReq() {
         SubscribeReqProto.SubscribeReq.Builder builder = SubscribeReqProto.SubscribeReq.newBuilder();

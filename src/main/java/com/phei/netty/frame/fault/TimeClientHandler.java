@@ -20,6 +20,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
 /**
@@ -44,8 +45,7 @@ public class TimeClientHandler extends ChannelHandlerAdapter {
 
     /**
      * 建立连接后就循环发送一百条消息, 发送一次就刷新一次 保证每条消息都写入Channel, 预想中 客户端会输出一百次服务端的时间
-     *  然而由于粘包, 消息都粘在了一起, 服务端收到的是一坨的消息
-     * @param ctx
+     * 然而由于粘包, 消息都粘在了一起, 服务端收到的是一坨的消息
      */
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
@@ -62,15 +62,14 @@ public class TimeClientHandler extends ChannelHandlerAdapter {
         ByteBuf buf = (ByteBuf) msg;
         byte[] req = new byte[buf.readableBytes()];
         buf.readBytes(req);
-        String body = new String(req, "UTF-8");
-        System.out.println("Now is : " + body + " ; the counter is : "
-                + ++counter);
+        String body = new String(req, StandardCharsets.UTF_8);
+        System.out.println("Now is : " + body + " ; the counter is : " + ++counter);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         // 释放资源
-        logger.warning("Unexpected exception from downstream : "+ cause.getMessage());
+        logger.warning("Unexpected exception from downstream : " + cause.getMessage());
         ctx.close();
     }
 }

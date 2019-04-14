@@ -1,7 +1,7 @@
 # 关于粘包拆包问题的发生和解决
 1. [默认的使用换行来进行分割](correct/README.md)
 2. [自定义分隔符](delimiter/README.md)
-3. [自定义长度](fixedLen/README.md)
+3. [自定义长度](fixedlen/README.md)
 4. 自定义长度, 但是长度加在了报文信息头部:  
 
 示例

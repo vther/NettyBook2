@@ -31,6 +31,18 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
  */
 public class TimeServer {
 
+    public static void main(String[] args) throws Exception {
+        int port = 8080;
+        if (args != null && args.length > 0) {
+            try {
+                port = Integer.valueOf(args[0]);
+            } catch (NumberFormatException e) {
+                // 采用默认值
+            }
+        }
+        new TimeServer().bind(port);
+    }
+
     public void bind(int port) throws Exception {
         // 配置服务端的NIO线程组
         EventLoopGroup bossGroup = new NioEventLoopGroup();
@@ -59,17 +71,5 @@ public class TimeServer {
             arg0.pipeline().addLast(new TimeServerHandler());
         }
 
-    }
-
-    public static void main(String[] args) throws Exception {
-        int port = 8080;
-        if (args != null && args.length > 0) {
-            try {
-                port = Integer.valueOf(args[0]);
-            } catch (NumberFormatException e) {
-                // 采用默认值
-            }
-        }
-        new TimeServer().bind(port);
     }
 }

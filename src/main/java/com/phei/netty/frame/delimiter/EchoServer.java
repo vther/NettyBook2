@@ -36,6 +36,10 @@ import io.netty.handler.logging.LoggingHandler;
  * @date 2014年2月14日
  */
 public class EchoServer {
+    public static void main(String[] args) throws Exception {
+        new EchoServer().bind(8081);
+    }
+
     public void bind(int port) throws Exception {
         // 配置服务端的NIO线程组
         EventLoopGroup bossGroup = new NioEventLoopGroup();
@@ -53,7 +57,7 @@ public class EchoServer {
                             // 加上了两个解码器, 一个自定义分隔符, 一个String解码器
                             ByteBuf delimiter = Unpooled.copiedBuffer("$_".getBytes());
                             // 添加两个参数, 一个是分隔符 缓冲对象, 一个是消息的最大长度
-                            ch.pipeline().addLast(new DelimiterBasedFrameDecoder(1024,delimiter));
+                            ch.pipeline().addLast(new DelimiterBasedFrameDecoder(1024, delimiter));
                             ch.pipeline().addLast(new StringDecoder());
                             ch.pipeline().addLast(new EchoServerHandler());
                         }
@@ -69,9 +73,5 @@ public class EchoServer {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
-    }
-
-    public static void main(String[] args) throws Exception {
-        new EchoServer().bind(8081);
     }
 }

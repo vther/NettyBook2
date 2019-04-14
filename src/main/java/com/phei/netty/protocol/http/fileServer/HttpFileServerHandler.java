@@ -15,40 +15,14 @@
  */
 package com.phei.netty.protocol.http.fileServer;
 
-import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
-import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
-import static io.netty.handler.codec.http.HttpHeaders.Names.CONNECTION;
-import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
-import static io.netty.handler.codec.http.HttpHeaders.Names.LOCATION;
-import static io.netty.handler.codec.http.HttpMethod.GET;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelProgressiveFuture;
-import io.netty.channel.ChannelProgressiveFutureListener;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.DefaultHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.channel.*;
+import io.netty.handler.codec.http.*;
 import io.netty.handler.stream.ChunkedFile;
 import io.netty.util.CharsetUtil;
 
+import javax.activation.MimetypesFileTypeMap;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.RandomAccessFile;
@@ -57,7 +31,12 @@ import java.net.URLDecoder;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-import javax.activation.MimetypesFileTypeMap;
+import static io.netty.handler.codec.http.HttpHeaders.Names.*;
+import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
+import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
+import static io.netty.handler.codec.http.HttpMethod.GET;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
  * @author lilinfeng
@@ -66,139 +45,18 @@ import javax.activation.MimetypesFileTypeMap;
  */
 public class HttpFileServerHandler extends
         SimpleChannelInboundHandler<FullHttpRequest> {
+    private static final Pattern INSECURE_URI = Pattern.compile(".*[<>&\"].*");
+    private static final Pattern ALLOWED_FILE_NAME = Pattern
+            .compile("[A-Za-z0-9][-_A-Za-z0-9\\.]*");
     private final String url;
 
     public HttpFileServerHandler(String url) {
         this.url = url;
     }
 
-    @Override
-    public void messageReceived(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
-        // 如果解码失败, 就返回 400
-        if (!request.getDecoderResult().isSuccess()) {
-            sendError(ctx, BAD_REQUEST);
-            return;
-        }
-        // 如果不是Get方法, 就返回405
-        if (request.getMethod() != GET) {
-            sendError(ctx, METHOD_NOT_ALLOWED);
-            return;
-        }
-        final String uri = request.getUri();
-        // 分析uri
-        final String path = sanitizeUri(uri);
-        System.out.println(">>"+path);
-        if (path == null) {
-            sendError(ctx, FORBIDDEN);
-            return;
-        }
-        File file = new File(path);
-        // 如果文件不存在或者隐藏文件 就404 是目录就返回目录链接
-        if (file.isHidden() || !file.exists()) {
-            sendError(ctx, NOT_FOUND);
-            return;
-        }
-
-        if (file.isDirectory()) {
-            if (uri.endsWith("/")) {
-                sendListing(ctx, file);
-            } else {
-                sendRedirect(ctx, uri + '/');
-            }
-            return;
-        }
-        // 如果不是合法文件 403
-        if (!file.isFile()) {
-            sendError(ctx, FORBIDDEN);
-            return;
-        }
-        RandomAccessFile randomAccessFile;
-        try {
-            randomAccessFile = new RandomAccessFile(file, "r");// 以只读的方式打开文件
-        } catch (FileNotFoundException fnfe) {
-            sendError(ctx, NOT_FOUND);
-            return;
-        }
-        // 文件存在, 一切正常 获取文件长度 发送回客户端
-        long fileLength = randomAccessFile.length();
-        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
-
-        setContentLength(response, fileLength);
-        setContentTypeHeader(response, file);
-        if (isKeepAlive(request)) {
-            response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-            // 要加这个头信息, 不然就只会下载
-            response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
-        }
-        ctx.write(response);
-        ChannelFuture sendFileFuture;
-        sendFileFuture = ctx.write(new ChunkedFile(randomAccessFile, 0,
-                fileLength, 8192), ctx.newProgressivePromise());
-        sendFileFuture.addListener(new ChannelProgressiveFutureListener() {
-            @Override
-            public void operationProgressed(ChannelProgressiveFuture future, long progress, long total) {
-                if (total < 0) { // total unknown
-                    System.err.println("Transfer progress: " + progress);
-                } else {
-                    System.err.println("Transfer progress: " + progress + " / "+ total);
-                }
-            }
-
-            @Override
-            public void operationComplete(ChannelProgressiveFuture future)
-                    throws Exception {
-                System.out.println("Transfer complete.");
-            }
-        });
-        ChannelFuture lastContentFuture = ctx
-                .writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
-        if (!isKeepAlive(request)) {
-            lastContentFuture.addListener(ChannelFutureListener.CLOSE);
-        }
-    }
-
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-            throws Exception {
-        cause.printStackTrace();
-        if (ctx.channel().isActive()) {
-            sendError(ctx, INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private static final Pattern INSECURE_URI = Pattern.compile(".*[<>&\"].*");
-
-    private String sanitizeUri(String uri) {
-        try {
-            // 使用UTF8 解码,
-            uri = URLDecoder.decode(uri, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            try {
-                uri = URLDecoder.decode(uri, "ISO-8859-1");
-            } catch (UnsupportedEncodingException e1) {
-                throw new Error();
-            }
-        }
-        if (!uri.startsWith(url)) {
-            return null;
-        }
-        if (!uri.startsWith("/")) {
-            return null;
-        }
-        uri = uri.replace('/', File.separatorChar);
-        if (uri.contains(File.separator + '.')
-                || uri.contains('.' + File.separator) || uri.startsWith(".")
-                || uri.endsWith(".") || INSECURE_URI.matcher(uri).matches()) {
-            return null;
-        }
-        return System.getProperty("user.dir") + File.separator + uri;
-    }
-
-    private static final Pattern ALLOWED_FILE_NAME = Pattern
-            .compile("[A-Za-z0-9][-_A-Za-z0-9\\.]*");
-
     /**
      * 发送目录作为链接回去
+     *
      * @param ctx 环境
      * @param dir 目录
      */
@@ -261,5 +119,125 @@ public class HttpFileServerHandler extends
         MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
         response.headers().set(CONTENT_TYPE,
                 mimeTypesMap.getContentType(file.getPath()));
+    }
+
+    @Override
+    public void messageReceived(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
+        // 如果解码失败, 就返回 400
+        if (!request.getDecoderResult().isSuccess()) {
+            sendError(ctx, BAD_REQUEST);
+            return;
+        }
+        // 如果不是Get方法, 就返回405
+        if (request.getMethod() != GET) {
+            sendError(ctx, METHOD_NOT_ALLOWED);
+            return;
+        }
+        final String uri = request.getUri();
+        // 分析uri
+        final String path = sanitizeUri(uri);
+        System.out.println(">>" + path);
+        if (path == null) {
+            sendError(ctx, FORBIDDEN);
+            return;
+        }
+        File file = new File(path);
+        // 如果文件不存在或者隐藏文件 就404 是目录就返回目录链接
+        if (file.isHidden() || !file.exists()) {
+            sendError(ctx, NOT_FOUND);
+            return;
+        }
+
+        if (file.isDirectory()) {
+            if (uri.endsWith("/")) {
+                sendListing(ctx, file);
+            } else {
+                sendRedirect(ctx, uri + '/');
+            }
+            return;
+        }
+        // 如果不是合法文件 403
+        if (!file.isFile()) {
+            sendError(ctx, FORBIDDEN);
+            return;
+        }
+        RandomAccessFile randomAccessFile;
+        try {
+            randomAccessFile = new RandomAccessFile(file, "r");// 以只读的方式打开文件
+        } catch (FileNotFoundException fnfe) {
+            sendError(ctx, NOT_FOUND);
+            return;
+        }
+        // 文件存在, 一切正常 获取文件长度 发送回客户端
+        long fileLength = randomAccessFile.length();
+        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
+
+        setContentLength(response, fileLength);
+        setContentTypeHeader(response, file);
+        if (isKeepAlive(request)) {
+            response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+            // 要加这个头信息, 不然就只会下载
+            response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
+        }
+        ctx.write(response);
+        ChannelFuture sendFileFuture;
+        sendFileFuture = ctx.write(new ChunkedFile(randomAccessFile, 0,
+                fileLength, 8192), ctx.newProgressivePromise());
+        sendFileFuture.addListener(new ChannelProgressiveFutureListener() {
+            @Override
+            public void operationProgressed(ChannelProgressiveFuture future, long progress, long total) {
+                if (total < 0) { // total unknown
+                    System.err.println("Transfer progress: " + progress);
+                } else {
+                    System.err.println("Transfer progress: " + progress + " / " + total);
+                }
+            }
+
+            @Override
+            public void operationComplete(ChannelProgressiveFuture future)
+                    throws Exception {
+                System.out.println("Transfer complete.");
+            }
+        });
+        ChannelFuture lastContentFuture = ctx
+                .writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+        if (!isKeepAlive(request)) {
+            lastContentFuture.addListener(ChannelFutureListener.CLOSE);
+        }
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
+            throws Exception {
+        cause.printStackTrace();
+        if (ctx.channel().isActive()) {
+            sendError(ctx, INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private String sanitizeUri(String uri) {
+        try {
+            // 使用UTF8 解码,
+            uri = URLDecoder.decode(uri, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            try {
+                uri = URLDecoder.decode(uri, "ISO-8859-1");
+            } catch (UnsupportedEncodingException e1) {
+                throw new Error();
+            }
+        }
+        if (!uri.startsWith(url)) {
+            return null;
+        }
+        if (!uri.startsWith("/")) {
+            return null;
+        }
+        uri = uri.replace('/', File.separatorChar);
+        if (uri.contains(File.separator + '.')
+                || uri.contains('.' + File.separator) || uri.startsWith(".")
+                || uri.endsWith(".") || INSECURE_URI.matcher(uri).matches()) {
+            return null;
+        }
+        return System.getProperty("user.dir") + File.separator + uri;
     }
 }

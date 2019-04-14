@@ -15,11 +15,11 @@
  */
 package com.phei.netty.pio;
 
+import com.phei.netty.bio.TimeServerHandler;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-
-import com.phei.netty.bio.TimeServerHandler;
 
 /**
  * @author lilinfeng
@@ -28,10 +28,6 @@ import com.phei.netty.bio.TimeServerHandler;
  */
 public class TimeServer {
 
-    /**
-     * @param args
-     * @throws IOException
-     */
     public static void main(String[] args) throws IOException {
         int port = 8090;
         ServerSocket server = null;
@@ -39,8 +35,7 @@ public class TimeServer {
             server = new ServerSocket(port);
             System.out.println("The time server is start in port : " + port);
             Socket socket;
-            TimeServerHandlerExecutePool singleExecutor = new TimeServerHandlerExecutePool(
-                    50, 10000);// 创建IO任务线程池
+            TimeServerHandlerExecutePool singleExecutor = new TimeServerHandlerExecutePool(50, 10000);// 创建IO任务线程池
             while (true) {
                 socket = server.accept();
                 singleExecutor.execute(new TimeServerHandler(socket));

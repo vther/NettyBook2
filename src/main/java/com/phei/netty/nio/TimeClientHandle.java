@@ -21,8 +21,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
-import java.util.Scanner;
 import java.util.Set;
 
 /**
@@ -122,7 +122,7 @@ public class TimeClientHandle implements Runnable {
                     readBuffer.flip();
                     byte[] bytes = new byte[readBuffer.remaining()];
                     readBuffer.get(bytes);
-                    String body = new String(bytes, "UTF-8");
+                    String body = new String(bytes, StandardCharsets.UTF_8);
                     System.out.println("Now is : " + body);
                     this.stop = true;
                 } else if (readBytes < 0) {
@@ -134,7 +134,6 @@ public class TimeClientHandle implements Runnable {
 
             }
         }
-
     }
 
     private void doConnect() throws IOException {

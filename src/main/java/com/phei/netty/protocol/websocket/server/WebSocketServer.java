@@ -33,6 +33,18 @@ import io.netty.handler.stream.ChunkedWriteHandler;
  * @date 2014年2月14日
  */
 public class WebSocketServer {
+    public static void main(String[] args) throws Exception {
+        int port = 8090;
+        if (args.length > 0) {
+            try {
+                port = Integer.parseInt(args[0]);
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+        }
+        new WebSocketServer().run(port);
+    }
+
     public void run(int port) throws Exception {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -47,12 +59,12 @@ public class WebSocketServer {
                                 throws Exception {
                             ChannelPipeline pipeline = ch.pipeline();
                             // 将消息编解码为HTTP消息
-                            pipeline.addLast("http-codec",new HttpServerCodec());
+                            pipeline.addLast("http-codec", new HttpServerCodec());
                             // 将HTTP消息的多个部分组合成一条完整的消息
-                            pipeline.addLast("aggregator",new HttpObjectAggregator(65536));
+                            pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
                             // 来向客户端发送HTML5文件, 主要用于浏览器和服务端之间的WebSocket通信
-                            ch.pipeline().addLast("http-chunked",new ChunkedWriteHandler());
-                            pipeline.addLast("handler",new WebSocketServerHandler());
+                            ch.pipeline().addLast("http-chunked", new ChunkedWriteHandler());
+                            pipeline.addLast("handler", new WebSocketServerHandler());
                         }
                     });
 
@@ -64,17 +76,5 @@ public class WebSocketServer {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
-    }
-
-    public static void main(String[] args) throws Exception {
-        int port = 8090;
-        if (args.length > 0) {
-            try {
-                port = Integer.parseInt(args[0]);
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
-            }
-        }
-        new WebSocketServer().run(port);
     }
 }

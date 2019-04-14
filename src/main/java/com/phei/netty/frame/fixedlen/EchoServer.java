@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-package com.phei.netty.frame.fixedLen;
+package com.phei.netty.frame.fixedlen;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -34,6 +34,10 @@ import io.netty.handler.logging.LoggingHandler;
  * @date 2014年2月14日
  */
 public class EchoServer {
+    public static void main(String[] args) throws Exception {
+        new EchoServer().bind(8081);
+    }
+
     public void bind(int port) throws Exception {
         // 配置服务端的NIO线程组
         EventLoopGroup bossGroup = new NioEventLoopGroup();
@@ -41,22 +45,21 @@ public class EchoServer {
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
-                .channel(NioServerSocketChannel.class)
-                .option(ChannelOption.SO_BACKLOG, 100)
-                .handler(new LoggingHandler(LogLevel.INFO))
-                .childHandler(new ChannelInitializer<SocketChannel>() {
-                    @Override
-                    public void initChannel(SocketChannel ch) {
-                        // 增加解码器 设定 定长的长度
-                        ch.pipeline().addLast(new FixedLengthFrameDecoder(20));
-                        ch.pipeline().addLast(new StringDecoder());
-                        ch.pipeline().addLast(new EchoServerHandler());
-                    }
-                });
+                    .channel(NioServerSocketChannel.class)
+                    .option(ChannelOption.SO_BACKLOG, 100)
+                    .handler(new LoggingHandler(LogLevel.INFO))
+                    .childHandler(new ChannelInitializer<SocketChannel>() {
+                        @Override
+                        public void initChannel(SocketChannel ch) {
+                            // 增加解码器 设定 定长的长度
+                            ch.pipeline().addLast(new FixedLengthFrameDecoder(20));
+                            ch.pipeline().addLast(new StringDecoder());
+                            ch.pipeline().addLast(new EchoServerHandler());
+                        }
+                    });
 
             // 绑定端口，同步等待成功
             ChannelFuture f = b.bind(port).sync();
-
             // 等待服务端监听端口关闭
             f.channel().closeFuture().sync();
         } finally {
@@ -64,9 +67,5 @@ public class EchoServer {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
-    }
-
-    public static void main(String[] args) throws Exception {
-        new EchoServer().bind(8081);
     }
 }
