@@ -20,6 +20,7 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
+            <!-- http://jibx.sourceforge.net/maven-jibx-plugin/basic.html -->
             <plugin>
                 <groupId>org.jibx</groupId>
                 <artifactId>jibx-maven-plugin</artifactId>
