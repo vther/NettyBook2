@@ -231,6 +231,13 @@ public class HttpFileServerHandler extends SimpleChannelInboundHandler<FullHttpR
                 || uri.endsWith(".") || INSECURE_URI.matcher(uri).matches()) {
             return null;
         }
-        return System.getProperty("user.dir") + File.separator + uri;
+        // E:\Develop\intel-workspace\NettyBook2
+        String userDir = System.getProperty("user.dir");
+        // E:\Develop\intel-workspace\NettyBook2
+        userDir = userDir.substring(0, userDir.lastIndexOf("\\"));
+        // E:\Develop\intel-workspace\nettybook2\src\main\java\com\phei\netty\
+        String fullPath = userDir + File.separator + uri;
+        System.out.println("fullPath = " + fullPath);
+        return fullPath;
     }
 }

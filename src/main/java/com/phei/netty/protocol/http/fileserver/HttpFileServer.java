@@ -60,8 +60,7 @@ public class HttpFileServer {
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
-                        protected void initChannel(SocketChannel ch)
-                                throws Exception {
+                        protected void initChannel(SocketChannel ch)                                throws Exception {
                             // 添加多个请求消息解码器
                             ch.pipeline().addLast("http-decoder", new HttpRequestDecoder()); // 请求消息解码器
                             ch.pipeline().addLast("http-aggregator", new HttpObjectAggregator(65536));// 目的是将多个消息转换为单一的request或者response对象
