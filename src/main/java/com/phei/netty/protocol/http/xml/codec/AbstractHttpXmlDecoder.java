@@ -55,8 +55,8 @@ public abstract class AbstractHttpXmlDecoder<T> extends MessageToMessageDecoder<
         if (isPrint)
             System.out.println("The body is : " + content);
         reader = new StringReader(content);
-        IUnmarshallingContext uctx = factory.createUnmarshallingContext();
-        Object result = uctx.unmarshalDocument(reader);
+        IUnmarshallingContext unmarshallingContext = factory.createUnmarshallingContext();
+        Object result = unmarshallingContext.unmarshalDocument(reader);
         reader.close();
         reader = null;
         return result;

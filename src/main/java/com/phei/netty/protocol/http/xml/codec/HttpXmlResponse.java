@@ -53,7 +53,7 @@ public class HttpXmlResponse {
     }
 
     /**
-     * @param body the body to set
+     * @param result the body to set
      */
     public final void setResult(Object result) {
         this.result = result;
@@ -66,8 +66,7 @@ public class HttpXmlResponse {
      */
     @Override
     public String toString() {
-        return "HttpXmlResponse [httpResponse=" + httpResponse + ", result="
-                + result + "]";
+        return "HttpXmlResponse [httpResponse=" + httpResponse + ", result=" + result + "]";
     }
 
 }

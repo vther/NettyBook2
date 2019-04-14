@@ -25,22 +25,19 @@ import java.util.List;
  * @version 1.0
  * @date 2014年3月1日
  */
-public class HttpXmlResponseDecoder extends
-        AbstractHttpXmlDecoder<DefaultFullHttpResponse> {
+public class HttpXmlResponseDecoder extends AbstractHttpXmlDecoder<DefaultFullHttpResponse> {
 
     public HttpXmlResponseDecoder(Class<?> clazz) {
         this(clazz, false);
     }
 
-    public HttpXmlResponseDecoder(Class<?> clazz, boolean isPrintlog) {
-        super(clazz, isPrintlog);
+    public HttpXmlResponseDecoder(Class<?> clazz, boolean isPrintLog) {
+        super(clazz, isPrintLog);
     }
 
     @Override
-    protected void decode(ChannelHandlerContext ctx,
-                          DefaultFullHttpResponse msg, List<Object> out) throws Exception {
-        HttpXmlResponse resHttpXmlResponse = new HttpXmlResponse(msg, decode0(
-                ctx, msg.content()));
+    protected void decode(ChannelHandlerContext ctx, DefaultFullHttpResponse msg, List<Object> out) throws Exception {
+        HttpXmlResponse resHttpXmlResponse = new HttpXmlResponse(msg, decode0(ctx, msg.content()));
         out.add(resHttpXmlResponse);
     }
 

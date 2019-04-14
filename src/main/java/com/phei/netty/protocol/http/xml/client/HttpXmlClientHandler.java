@@ -26,7 +26,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
  * @version 1.0
  * @date 2014年2月16日
  */
-public class HttpXmlClientHandle extends SimpleChannelInboundHandler<HttpXmlResponse> {
+public class HttpXmlClientHandler extends SimpleChannelInboundHandler<HttpXmlResponse> {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {

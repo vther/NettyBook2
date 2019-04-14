@@ -67,10 +67,9 @@ public class HttpXmlClient {
                             ch.pipeline().addLast("xml-decoder", new HttpXmlResponseDecoder(Order.class, true));
                             ch.pipeline().addLast("http-encoder", new HttpRequestEncoder());
                             ch.pipeline().addLast("xml-encoder", new HttpXmlRequestEncoder());
-                            ch.pipeline().addLast("xmlClientHandler", new HttpXmlClientHandle());
+                            ch.pipeline().addLast("xmlClientHandler", new HttpXmlClientHandler());
                         }
                     });
-
             // 发起异步连接操作
             ChannelFuture f = b.connect(new InetSocketAddress(port)).sync();
             // 当代客户端链路关闭

@@ -32,8 +32,7 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  * @version 1.0
  * @date 2014年3月1日
  */
-public class HttpXmlResponseEncoder extends
-        AbstractHttpXmlEncoder<HttpXmlResponse> {
+public class HttpXmlResponseEncoder extends AbstractHttpXmlEncoder<HttpXmlResponse> {
 
     /*
      * (non-Javadoc)
@@ -42,16 +41,13 @@ public class HttpXmlResponseEncoder extends
      * io.netty.handler.codec.MessageToMessageEncoder#encode(io.netty.channel
      * .ChannelHandlerContext, java.lang.Object, java.util.List)
      */
-    protected void encode(ChannelHandlerContext ctx, HttpXmlResponse msg,
-                          List<Object> out) throws Exception {
+    protected void encode(ChannelHandlerContext ctx, HttpXmlResponse msg, List<Object> out) throws Exception {
         ByteBuf body = encode0(ctx, msg.getResult());
         FullHttpResponse response = msg.getHttpResponse();
         if (response == null) {
             response = new DefaultFullHttpResponse(HTTP_1_1, OK, body);
         } else {
-            response = new DefaultFullHttpResponse(msg.getHttpResponse()
-                    .getProtocolVersion(), msg.getHttpResponse().getStatus(),
-                    body);
+            response = new DefaultFullHttpResponse(msg.getHttpResponse().getProtocolVersion(), msg.getHttpResponse().getStatus(), body);
         }
         response.headers().set(CONTENT_TYPE, "text/xml");
         setContentLength(response, body.readableBytes());
