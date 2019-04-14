@@ -19,3 +19,12 @@
 有关该书的更多信息可以关注李林峰老师的微博 @Nettying 以及查看其在ifeve网站上的文章：http://ifeve.com/author/linfeng/
 
 
+-------
+### 我做的事情：
+
+1，按照自己的观看习惯格式化了代码
+
+2，jibx编译适用maven插件来完成，使用前先编译：
+`mvn org.jibx:jibx-maven-plugin:1.3.1:bind`
+
+

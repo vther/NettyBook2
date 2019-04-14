@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.phei.netty.protocol.http.fileServer;
+package com.phei.netty.protocol.http.fileserver;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -43,14 +43,12 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  * @version 1.0
  * @date 2014年2月14日
  */
-public class HttpFileServerHandler extends
-        SimpleChannelInboundHandler<FullHttpRequest> {
+public class HttpFileServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
     private static final Pattern INSECURE_URI = Pattern.compile(".*[<>&\"].*");
-    private static final Pattern ALLOWED_FILE_NAME = Pattern
-            .compile("[A-Za-z0-9][-_A-Za-z0-9\\.]*");
+    private static final Pattern ALLOWED_FILE_NAME = Pattern.compile("[A-Za-z0-9][-_A-Za-z0-9\\.]*");
     private final String url;
 
-    public HttpFileServerHandler(String url) {
+    HttpFileServerHandler(String url) {
         this.url = url;
     }
 
@@ -106,8 +104,7 @@ public class HttpFileServerHandler extends
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
-    private static void sendError(ChannelHandlerContext ctx,
-                                  HttpResponseStatus status) {
+    private static void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1,
                 status, Unpooled.copiedBuffer("Failure: " + status.toString()
                 + "\r\n", CharsetUtil.UTF_8));
@@ -117,8 +114,7 @@ public class HttpFileServerHandler extends
 
     private static void setContentTypeHeader(HttpResponse response, File file) {
         MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
-        response.headers().set(CONTENT_TYPE,
-                mimeTypesMap.getContentType(file.getPath()));
+        response.headers().set(CONTENT_TYPE, mimeTypesMap.getContentType(file.getPath()));
     }
 
     @Override
@@ -164,7 +160,7 @@ public class HttpFileServerHandler extends
         RandomAccessFile randomAccessFile;
         try {
             randomAccessFile = new RandomAccessFile(file, "r");// 以只读的方式打开文件
-        } catch (FileNotFoundException fnfe) {
+        } catch (FileNotFoundException e) {
             sendError(ctx, NOT_FOUND);
             return;
         }
@@ -194,21 +190,18 @@ public class HttpFileServerHandler extends
             }
 
             @Override
-            public void operationComplete(ChannelProgressiveFuture future)
-                    throws Exception {
+            public void operationComplete(ChannelProgressiveFuture future) throws Exception {
                 System.out.println("Transfer complete.");
             }
         });
-        ChannelFuture lastContentFuture = ctx
-                .writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+        ChannelFuture lastContentFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
         if (!isKeepAlive(request)) {
             lastContentFuture.addListener(ChannelFutureListener.CLOSE);
         }
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-            throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         cause.printStackTrace();
         if (ctx.channel().isActive()) {
             sendError(ctx, INTERNAL_SERVER_ERROR);

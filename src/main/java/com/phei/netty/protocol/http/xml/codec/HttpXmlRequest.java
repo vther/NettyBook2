@@ -54,7 +54,7 @@ public class HttpXmlRequest {
     }
 
     /**
-     * @param object the object to set
+     * @param body the object to set
      */
     public final void setBody(Object body) {
         this.body = body;

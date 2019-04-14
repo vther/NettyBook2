@@ -63,8 +63,7 @@ public class FileServer {
                          * io.netty.channel.ChannelInitializer#initChannel(io
                          * .netty.channel.Channel)
                          */
-                        public void initChannel(SocketChannel ch)
-                                throws Exception {
+                        public void initChannel(SocketChannel ch) throws Exception {
                             ch.pipeline().addLast(
                                     new StringEncoder(CharsetUtil.UTF_8),
                                     new LineBasedFrameDecoder(1024),

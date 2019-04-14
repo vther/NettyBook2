@@ -33,15 +33,13 @@ import java.nio.charset.Charset;
  * @version 1.0
  * @date 2014年3月1日
  */
-public abstract class AbstractHttpXmlEncoder<T> extends
-        MessageToMessageEncoder<T> {
+public abstract class AbstractHttpXmlEncoder<T> extends MessageToMessageEncoder<T> {
     final static String CHARSET_NAME = "UTF-8";
     final static Charset UTF_8 = Charset.forName(CHARSET_NAME);
     IBindingFactory factory = null;
     StringWriter writer = null;
 
-    protected ByteBuf encode0(ChannelHandlerContext ctx, Object body)
-            throws Exception {
+    protected ByteBuf encode0(ChannelHandlerContext ctx, Object body) throws Exception {
         factory = BindingDirectory.getFactory(body.getClass());
         writer = new StringWriter();
         IMarshallingContext mctx = factory.createMarshallingContext();
@@ -50,8 +48,7 @@ public abstract class AbstractHttpXmlEncoder<T> extends
         String xmlStr = writer.toString();
         writer.close();
         writer = null;
-        ByteBuf encodeBuf = Unpooled.copiedBuffer(xmlStr, UTF_8);
-        return encodeBuf;
+        return Unpooled.copiedBuffer(xmlStr, UTF_8);
     }
 
     /**

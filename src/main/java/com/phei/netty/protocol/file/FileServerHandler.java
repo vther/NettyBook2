@@ -39,8 +39,8 @@ public class FileServerHandler extends SimpleChannelInboundHandler<String> {
      * io.netty.channel.SimpleChannelInboundHandler#messageReceived(io.netty
      * .channel.ChannelHandlerContext, java.lang.Object)
      */
-    public void messageReceived(ChannelHandlerContext ctx, String msg)
-            throws Exception {
+    @Override
+    public void messageReceived(ChannelHandlerContext ctx, String msg) throws Exception {
         File file = new File(msg);
         if (file.exists()) {
             if (!file.isFile()) {
@@ -49,8 +49,7 @@ public class FileServerHandler extends SimpleChannelInboundHandler<String> {
             }
             ctx.write(file + " " + file.length() + CR);
             RandomAccessFile randomAccessFile = new RandomAccessFile(msg, "r");
-            FileRegion region = new DefaultFileRegion(
-                    randomAccessFile.getChannel(), 0, randomAccessFile.length());
+            FileRegion region = new DefaultFileRegion(randomAccessFile.getChannel(), 0, randomAccessFile.length());
             ctx.write(region);
             ctx.writeAndFlush(CR);
             randomAccessFile.close();
@@ -66,8 +65,8 @@ public class FileServerHandler extends SimpleChannelInboundHandler<String> {
      * io.netty.channel.ChannelHandlerAdapter#exceptionCaught(io.netty.channel
      * .ChannelHandlerContext, java.lang.Throwable)
      */
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-            throws Exception {
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         cause.printStackTrace();
         ctx.close();
     }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.phei.netty.protocol.http.fileServer;
+package com.phei.netty.protocol.http.fileserver;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -63,22 +63,16 @@ public class HttpFileServer {
                         protected void initChannel(SocketChannel ch)
                                 throws Exception {
                             // 添加多个请求消息解码器
-                            ch.pipeline().addLast("http-decoder",
-                                    new HttpRequestDecoder()); // 请求消息解码器
-                            ch.pipeline().addLast("http-aggregator",
-                                    new HttpObjectAggregator(65536));// 目的是将多个消息转换为单一的request或者response对象
-                            ch.pipeline().addLast("http-encoder",
-                                    new HttpResponseEncoder());//响应解码器
-                            ch.pipeline().addLast("http-chunked",
-                                    new ChunkedWriteHandler());//目的是支持异步大文件传输（）
+                            ch.pipeline().addLast("http-decoder", new HttpRequestDecoder()); // 请求消息解码器
+                            ch.pipeline().addLast("http-aggregator", new HttpObjectAggregator(65536));// 目的是将多个消息转换为单一的request或者response对象
+                            ch.pipeline().addLast("http-encoder", new HttpResponseEncoder());//响应解码器
+                            ch.pipeline().addLast("http-chunked", new ChunkedWriteHandler());//目的是支持异步大文件传输（）
                             // 自己手动编写的处理器
-                            ch.pipeline().addLast("fileServerHandler",
-                                    new HttpFileServerHandler(url));
+                            ch.pipeline().addLast("fileServerHandler", new HttpFileServerHandler(url));
                         }
                     });
             ChannelFuture future = b.bind("127.0.0.1", port).sync();
-            System.out.println("HTTP文件目录服务器启动，网址是 : " + "http://127.0.0.1:"
-                    + port + url);
+            System.out.println("HTTP文件目录服务器启动，网址是 : " + "http://127.0.0.1:" + port + url);
             future.channel().closeFuture().sync();
         } finally {
             bossGroup.shutdownGracefully();

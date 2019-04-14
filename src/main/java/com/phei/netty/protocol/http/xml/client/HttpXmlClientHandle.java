@@ -26,13 +26,11 @@ import io.netty.channel.SimpleChannelInboundHandler;
  * @version 1.0
  * @date 2014年2月16日
  */
-public class HttpXmlClientHandle extends
-        SimpleChannelInboundHandler<HttpXmlResponse> {
+public class HttpXmlClientHandle extends SimpleChannelInboundHandler<HttpXmlResponse> {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        HttpXmlRequest request = new HttpXmlRequest(null,
-                OrderFactory.create(123));
+        HttpXmlRequest request = new HttpXmlRequest(null, OrderFactory.create(123));
         ctx.writeAndFlush(request);
     }
 
@@ -43,11 +41,8 @@ public class HttpXmlClientHandle extends
     }
 
     @Override
-    protected void messageReceived(ChannelHandlerContext ctx,
-                                   HttpXmlResponse msg) throws Exception {
-        System.out.println("The client receive response of http header is : "
-                + msg.getHttpResponse().headers().names());
-        System.out.println("The client receive response of http body is : "
-                + msg.getResult());
+    protected void messageReceived(ChannelHandlerContext ctx, HttpXmlResponse msg) throws Exception {
+        System.out.println("The client receive response of http header is : " + msg.getHttpResponse().headers().names());
+        System.out.println("The client receive response of http body is : " + msg.getResult());
     }
 }
