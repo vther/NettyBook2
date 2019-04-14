@@ -43,8 +43,7 @@ public class NettyClient {
 
     private static final Log LOG = LogFactory.getLog(NettyClient.class);
     EventLoopGroup group = new NioEventLoopGroup();
-    private ScheduledExecutorService executor = Executors
-            .newScheduledThreadPool(1);
+    private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
     /**
      *
@@ -54,9 +53,7 @@ public class NettyClient {
     }
 
     public void connect(int port, String host) throws Exception {
-
         // 配置客户端NIO线程组
-
         try {
             Bootstrap b = new Bootstrap();
             b.group(group).channel(NioSocketChannel.class)
@@ -65,16 +62,11 @@ public class NettyClient {
                         @Override
                         public void initChannel(SocketChannel ch)
                                 throws Exception {
-                            ch.pipeline().addLast(
-                                    new NettyMessageDecoder(1024 * 1024, 4, 4));
-                            ch.pipeline().addLast("MessageEncoder",
-                                    new NettyMessageEncoder());
-                            ch.pipeline().addLast("readTimeoutHandler",
-                                    new ReadTimeoutHandler(50));
-                            ch.pipeline().addLast("LoginAuthHandler",
-                                    new LoginAuthReqHandler());
-                            ch.pipeline().addLast("HeartBeatHandler",
-                                    new HeartBeatReqHandler());
+                            ch.pipeline().addLast(new NettyMessageDecoder(1024 * 1024, 4, 4));
+                            ch.pipeline().addLast("MessageEncoder", new NettyMessageEncoder());
+                            ch.pipeline().addLast("readTimeoutHandler", new ReadTimeoutHandler(50));
+                            ch.pipeline().addLast("LoginAuthHandler", new LoginAuthReqHandler());
+                            ch.pipeline().addLast("HeartBeatHandler", new HeartBeatReqHandler());
                         }
                     });
             // 发起异步连接操作
